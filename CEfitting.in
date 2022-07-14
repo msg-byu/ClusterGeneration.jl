@@ -1,0 +1,174 @@
+#********************************************************************************
+# GENERAL SECTION
+#********************************************************************************
+#
+#--------------------------------------------------------------------------------
+# General
+#
+# - Make a least-square fit with 1 set of clusters switched on, or employ a
+#   genetic algorithm to find the best set of clusters.
+#   Specify either:
+#   * optimize  (for the genetic algorithm)
+#   * simple    (without the genetic algorithm)
+# - continue with previous session?
+# - continue file,
+#   * use $OBS as placeholder for the observable number.
+#   * use $POP as placeholder for the population number.
+#   ( example:   population.g1000.o$OBS.p$POP.out
+#              generation --^     ^     ^-- population
+#                                 |
+#                              observable                 )
+#   Note:
+#   the last generation is always stored in population.glast.*, while
+#   backup copies of the population are made whenever the Garbulsky-Ceder
+#   constraints are changed. Then, find a copy in population.g<generation>.*
+# - individual(s) of the continue file to use?
+#   Specify either:
+#   * index of the individual in the file
+#   * 'best'  (take the individual with the best CVS, including the dead individual)
+#   * 'dead'  (take only the dead individual)
+#   * 'all'   (take all individuals, including the dead one;
+#              required for continuing an optimization run)
+#
+optimize
+F
+population.glast.o$OBS.p$POP.out
+all
+#
+#--------------------------------------------------------------------------------
+# Clusters section
+# - Maximum nr. of clusters used in a fit (including constant term and onsites)
+# - damping for the clusters:
+#   for 2, 3, 4, 5, 6 body clusters provide a constant prefactor (c) and the
+#   exponential (lambda) for the average distance (avgR). Damping is then
+#   given by 1/2*c*avgR^lambda:
+#
+#      <c2> <lambda2>
+#      ...
+#      <c6> <lambda6>
+#
+40
+#
+#
+0.004 2 # 2-body clusters
+0.008 1 # 3-body clusters
+0.008 0.8 # 4-body clusters
+0.008 0.8 # 5-body clusters
+0.008 0.8 # 6-body clusters
+#
+#
+#********************************************************************************
+# GARBULSKY-CEDER CONSTRAINTS (FIT PARAMETERS)
+#********************************************************************************
+#
+# NOTE: GARBULSKY-CEDER CONSTRAINTS are currently not editable in MedeA and might
+#       be removed from UNCLE in a future version.
+#       Current approach is to use a high value as otherwise the CE might not 
+#       converge.
+# 
+#--------------------------------------------------------------------------------
+# General Garbulsky-Ceder constraints
+# - number of constraints:
+#   For a simple fit it suffices to have '1'.
+#   For a GA run, you can choose to change the constraints at a certain
+#   generation. Then, supply, say, '5' if you change the constraints 4 times, i.e.
+#   you have a total of 5 different constraints.
+# - for the first constraint:
+#      <delta1> <delta2> <delta3>
+# - for each further constraint:
+#      <generation> <delta1> <delta2> <delta3>
+#   where <generation> gives the generation number when the constraints are
+#   switched to those given in the same line.
+# 
+1
+ 0.1 10 10
+#
+#--------------------------------------------------------------------------------
+# Special Garbulsky-Ceder constraints
+# - (total) delta1 for the pure elements
+# - multiplicative factor for delta1 for the ground states
+#
+0.0000001
+0.1
+#
+#--------------------------------------------------------------------------------
+# Smearing of Garbulsky-Ceder constraints
+# You can opt to smear the constraints depending on the structure's distance D
+# from the low energy structures, by a Boltzmann factor:
+#     delta_i(structure) = delta_i * exp( D / kT )
+# where delta_i represents the deltas given in the section above.
+#
+# - Supply the 'temperature factor' kT
+#   Note: if you want to apply strict (fixed) constraints for all structures,
+#         choose kT large.
+#
+10000000000
+#
+#********************************************************************************
+# GENETIC ALGORITHM
+#********************************************************************************
+#
+#--------------------------------------------------------------------------------
+# Population section
+# - number of different populations
+#   Note: you can use OMP for parallel evaluation of the populations. In this
+#         case you should, for optimal performance, choose the number of
+#         populations to be commensurate with the number of OMP threads.
+# - size of each population (i.e., number of individuals in each population)
+# - maximum age for an individual (then, it dies)
+# - how diverse must the population be? Supply lower limit of number of
+#   gene-differences from best individual.
+#   Default: 1.0
+# - if the diversity limit is exceeded, the corresponding population is
+#   either mixed with others, mutated, or re-setup. Give the respective
+#   probabilities:
+#      <probability for population crossing> <probability for mutation burst>
+#   Default: 0.8 0.1
+#
+2
+80
+40
+2.0
+0.8 0.1
+#
+#--------------------------------------------------------------------------------
+# Children section
+# - number of children per generation
+# - probability for a child having a parent outside the current population
+# - how many individuals are replaced by the children?
+#
+40
+0.1
+20
+#
+#--------------------------------------------------------------------------------
+# Simulation time: Maximum number of generations:
+#
+200
+#
+#
+#--------------------------------------------------------------------------------
+# Cross validation:
+# We use a k-fold cross validation scheme that is repeated n times.
+# In the k-fold CV approach, the data is divided into k prediction
+# sets, each prediction set is 'left out' once. We repeat this (with a
+# different 'slicing of the pie into k pieces') n times.
+# That means we use k*n subsets, and each structure is predicted n times.
+# (Note: each population gets its own cross validation sets)
+# Specify either:
+# * <k> <n>
+# * LOO for Leave-one-out, which is equivalent to k=<number of input struc-CE rank> n=1
+#
+LOO
+#
+#
+#--------------------------------------------------------------------------------
+# Mutation probability of children per 'on'-gene
+# (for an individual with 100 genes turned on, a mutation probability of 0.05 will
+# on average mutate 5 arbitrary genes)
+#
+0.05
+#
+#
+#
+EOF
